@@ -13,7 +13,7 @@ class RecordEntityModel {
   @Property(type: PropertyType.date)
   DateTime date;
 
-  RecordEnumType get dbType => RecordEnumType.values[type];
+
 
   set dbType(RecordEnumType value) {
     type = value.index;

@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:md_financial/enums/record_enum.dart';
 import 'package:md_financial/object_box.dart';
 import 'package:md_financial/screens/add_screen.dart';
 import 'package:persian_datetime_picker/persian_datetime_picker.dart';
+import 'package:persian_number_utility/persian_number_utility.dart';
+import 'models/entities/record_entity_model.dart';
 
 // TODO: 1- choose database
 // TODO: 2- Add New Pay
@@ -64,6 +67,14 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  final box = objectbox.store.box<RecordEntityModel>();
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -83,9 +94,36 @@ class _MyHomePageState extends State<MyHomePage> {
         child: Icon(Icons.add),
       ),
       body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[],
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: ListView.builder(
+            itemCount: box.getAll().length,
+            itemBuilder: (BuildContext context, int index) {
+              var item = box.getAll()[index];
+              return Card(
+                child: ListTile(
+                  title: Text(item.title),
+                  leading: Icon(
+                    RecordEnumType.values[item.type] == RecordEnumType.expense
+                        ? Icons.arrow_upward
+                        : Icons.arrow_downward,
+                    color: RecordEnumType.values[item.type] ==
+                            RecordEnumType.expense
+                        ? Colors.red
+                        : Colors.green,
+                  ),
+                  subtitle: Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(item.amount.toString().seRagham() + " تومان"),
+                    ],
+                  ),
+                  trailing: Text(item.date.toPersianDate()),
+                ),
+              );
+            },
+          ),
         ),
       ),
     );

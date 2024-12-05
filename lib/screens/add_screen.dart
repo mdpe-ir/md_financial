@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:md_financial/enums/record_enum.dart';
+import 'package:md_financial/main.dart';
+import 'package:md_financial/models/entities/record_entity_model.dart';
 import 'package:md_financial/widgets/form_field_widget.dart';
 import 'package:persian_datetime_picker/persian_datetime_picker.dart';
 import 'package:persian_number_utility/persian_number_utility.dart';
@@ -16,13 +18,31 @@ class _AddScreenState extends State<AddScreen> {
   TextEditingController selectedDateController = TextEditingController();
 
   RecordEnumType recordEnumType = RecordEnumType.expense;
-  Jalali? picked;
+  Jalali picked = Jalali.now();
   String title = "";
   String description = "";
   String amount = "";
   String selectedDate = "";
 
-  void save(){}
+  Future<void> save() async {
+    final box = objectbox.store.box<RecordEntityModel>();
+    await box.putAsync(RecordEntityModel(
+      type: recordEnumType.index,
+      amount: int.parse(amount.replaceAll(",", "")),
+      title: title,
+      description: description,
+      date: picked!.toDateTime(),
+    ));
+    Navigator.pop(context);
+  }
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    selectedDate = picked?.formatFullDate() ?? "";
+    selectedDateController.text = selectedDate;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -60,7 +80,7 @@ class _AddScreenState extends State<AddScreen> {
                   lastDate: Jalali(1450, 9),
                   initialEntryMode: PersianDatePickerEntryMode.calendarOnly,
                   initialDatePickerMode: PersianDatePickerMode.day,
-                );
+                ) ?? Jalali.now();
                 setState(() {
                   selectedDate = picked?.formatFullDate() ?? "";
                   selectedDateController.text = selectedDate;
@@ -88,7 +108,7 @@ class _AddScreenState extends State<AddScreen> {
                     child: ToggleSwitch(
                       minWidth: 130.0,
                       centerText: true,
-                      initialLabelIndex: 0,
+                      initialLabelIndex: 1,
                       cornerRadius: 15.0,
                       activeFgColor: Colors.white,
                       inactiveBgColor: Colors.grey,
@@ -101,7 +121,7 @@ class _AddScreenState extends State<AddScreen> {
                         [Colors.red]
                       ],
                       onToggle: (index) {
-                        if (index == 0) recordEnumType = RecordEnumType.expense;
+                        if (index == 1) recordEnumType = RecordEnumType.expense;
                         if (index == 0) recordEnumType = RecordEnumType.income;
                         setState(() {});
                       },

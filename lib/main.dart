@@ -1,12 +1,23 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:md_financial/object_box.dart';
+import 'package:md_financial/screens/add_screen.dart';
+import 'package:persian_datetime_picker/persian_datetime_picker.dart';
 
-
-// TODO: 0- Add need it fonts and assets and make base theme
 // TODO: 1- choose database
 // TODO: 2- Add New Pay
 // TODO: 3- Show it
 
-void main() {
+/// Provides access to the ObjectBox Store throughout the app.
+late ObjectBox objectbox;
+
+Future<void> main() async {
+  // This is required so ObjectBox can get the application directory
+  // to store the database in.
+  WidgetsFlutterBinding.ensureInitialized();
+
+  objectbox = await ObjectBox.create();
+
   runApp(const MyApp());
 }
 
@@ -20,7 +31,19 @@ class MyApp extends StatelessWidget {
       title: 'حساب داری شخصی',
       themeMode: ThemeMode.dark,
       debugShowCheckedModeBanner: false,
+      localizationsDelegates: [
+        PersianMaterialLocalizations.delegate,
+        PersianCupertinoLocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: [
+        Locale("fa", "IR"),
+        Locale("fa"),
+      ],
       theme: ThemeData(
+        fontFamily: "Vazirmatn",
         brightness: Brightness.dark,
         colorScheme: ColorScheme.fromSeed(
             seedColor: Colors.blue, brightness: Brightness.dark),
@@ -48,12 +71,21 @@ class _MyHomePageState extends State<MyHomePage> {
         centerTitle: true,
         title: Text(widget.title),
       ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => AddScreen(),
+            ),
+          );
+        },
+        child: Icon(Icons.add),
+      ),
       body: Center(
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center ,
-          children: <Widget>[
-
-          ],
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[],
         ),
       ),
     );

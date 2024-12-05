@@ -9,6 +9,7 @@ android {
     namespace = "ir.mdpe.md_financial"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
+//    "25.1.8937393"
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8

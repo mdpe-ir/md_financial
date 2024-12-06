@@ -1,5 +1,5 @@
-import 'package:md_financial/enums/record_enum.dart';
 import 'package:objectbox/objectbox.dart';
+import 'hashtag_entity.dart';
 
 @Entity()
 class RecordEntityModel {
@@ -13,11 +13,7 @@ class RecordEntityModel {
   @Property(type: PropertyType.date)
   DateTime date;
 
-
-
-  set dbType(RecordEnumType value) {
-    type = value.index;
-  }
+  ToMany<HashtagEntity> hashtags = ToMany();
 
   RecordEntityModel({
     this.id = 0,
@@ -26,5 +22,6 @@ class RecordEntityModel {
     required this.title,
     required this.description,
     required this.date,
+    required this.hashtags,
   });
 }

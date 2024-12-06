@@ -33,9 +33,11 @@ class FormFieldWidget extends StatelessWidget {
     this.onTap,
     this.suffix,
     this.onChanged,
-    this.inputFormatters, this.value, this.controller,
+    this.inputFormatters,
+    this.value,
+    this.controller,
+    this.prefixIcon,
   });
-
 
   final TextEditingController? controller;
   final Function(String)? onChanged;
@@ -46,6 +48,7 @@ class FormFieldWidget extends StatelessWidget {
   final String? value;
   final bool isReadOnly;
   final Widget? suffix;
+  final Widget? prefixIcon;
   final List<TextInputFormatter>? inputFormatters;
 
   @override
@@ -61,7 +64,11 @@ class FormFieldWidget extends StatelessWidget {
         onTap: onTap,
         inputFormatters: inputFormatters,
         decoration: InputDecoration(
-            border: OutlineInputBorder(), labelText: label, suffix: suffix),
+          border: OutlineInputBorder(),
+          labelText: label,
+          prefixIcon: prefixIcon,
+          suffix: suffix,
+        ),
       ),
     );
   }

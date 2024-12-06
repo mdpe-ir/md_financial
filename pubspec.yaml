@@ -43,6 +43,8 @@ dependencies:
   persian_datetime_picker: ^3.0.2
   persian_number_utility: ^1.1.4
   toggle_switch: ^2.3.0
+  path_provider: ^2.1.5
+  filter_list: ^1.0.3
 
 dev_dependencies:
   flutter_test:

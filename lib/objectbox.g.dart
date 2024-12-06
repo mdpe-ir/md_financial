@@ -14,6 +14,7 @@ import 'package:objectbox/internal.dart'
 import 'package:objectbox/objectbox.dart' as obx;
 import 'package:objectbox_flutter_libs/objectbox_flutter_libs.dart';
 
+import 'models/entities/hashtag_entity.dart';
 import 'models/entities/record_entity_model.dart';
 
 export 'package:objectbox/objectbox.dart'; // so that callers only have to import this file
@@ -56,6 +57,30 @@ final _entities = <obx_int.ModelEntity>[
             type: 6,
             flags: 0)
       ],
+      relations: <obx_int.ModelRelation>[
+        obx_int.ModelRelation(
+            id: const obx_int.IdUid(1, 8400700663430999727),
+            name: 'hashtags',
+            targetId: const obx_int.IdUid(2, 6395373326551313019))
+      ],
+      backlinks: <obx_int.ModelBacklink>[]),
+  obx_int.ModelEntity(
+      id: const obx_int.IdUid(2, 6395373326551313019),
+      name: 'HashtagEntity',
+      lastPropertyId: const obx_int.IdUid(2, 4394508335109483375),
+      flags: 0,
+      properties: <obx_int.ModelProperty>[
+        obx_int.ModelProperty(
+            id: const obx_int.IdUid(1, 6254594628705776353),
+            name: 'id',
+            type: 6,
+            flags: 1),
+        obx_int.ModelProperty(
+            id: const obx_int.IdUid(2, 4394508335109483375),
+            name: 'name',
+            type: 9,
+            flags: 0)
+      ],
       relations: <obx_int.ModelRelation>[],
       backlinks: <obx_int.ModelBacklink>[])
 ];
@@ -95,9 +120,9 @@ Future<obx.Store> openStore(
 obx_int.ModelDefinition getObjectBoxModel() {
   final model = obx_int.ModelInfo(
       entities: _entities,
-      lastEntityId: const obx_int.IdUid(1, 7079185567296412889),
+      lastEntityId: const obx_int.IdUid(2, 6395373326551313019),
       lastIndexId: const obx_int.IdUid(0, 0),
-      lastRelationId: const obx_int.IdUid(0, 0),
+      lastRelationId: const obx_int.IdUid(1, 8400700663430999727),
       lastSequenceId: const obx_int.IdUid(0, 0),
       retiredEntityUids: const [],
       retiredIndexUids: const [],
@@ -111,7 +136,10 @@ obx_int.ModelDefinition getObjectBoxModel() {
     RecordEntityModel: obx_int.EntityDefinition<RecordEntityModel>(
         model: _entities[0],
         toOneRelations: (RecordEntityModel object) => [],
-        toManyRelations: (RecordEntityModel object) => {},
+        toManyRelations: (RecordEntityModel object) => {
+              obx_int.RelInfo<RecordEntityModel>.toMany(1, object.id):
+                  object.hashtags
+            },
         getId: (RecordEntityModel object) => object.id,
         setId: (RecordEntityModel object, int id) {
           object.id = id;
@@ -145,13 +173,45 @@ obx_int.ModelDefinition getObjectBoxModel() {
                   .vTableGet(buffer, rootOffset, 10, '');
           final dateParam = DateTime.fromMillisecondsSinceEpoch(
               const fb.Int64Reader().vTableGet(buffer, rootOffset, 12, 0));
+          final hashtagsParam = obx.ToMany<HashtagEntity>();
           final object = RecordEntityModel(
               id: idParam,
               type: typeParam,
               amount: amountParam,
               title: titleParam,
               description: descriptionParam,
-              date: dateParam);
+              date: dateParam,
+              hashtags: hashtagsParam);
+          obx_int.InternalToManyAccess.setRelInfo<RecordEntityModel>(
+              object.hashtags,
+              store,
+              obx_int.RelInfo<RecordEntityModel>.toMany(1, object.id));
+          return object;
+        }),
+    HashtagEntity: obx_int.EntityDefinition<HashtagEntity>(
+        model: _entities[1],
+        toOneRelations: (HashtagEntity object) => [],
+        toManyRelations: (HashtagEntity object) => {},
+        getId: (HashtagEntity object) => object.id,
+        setId: (HashtagEntity object, int id) {
+          object.id = id;
+        },
+        objectToFB: (HashtagEntity object, fb.Builder fbb) {
+          final nameOffset = fbb.writeString(object.name);
+          fbb.startTable(3);
+          fbb.addInt64(0, object.id);
+          fbb.addOffset(1, nameOffset);
+          fbb.finish(fbb.endTable());
+          return object.id;
+        },
+        objectFromFB: (obx.Store store, ByteData fbData) {
+          final buffer = fb.BufferContext(fbData);
+          final rootOffset = buffer.derefObject(0);
+          final idParam =
+              const fb.Int64Reader().vTableGet(buffer, rootOffset, 4, 0);
+          final nameParam = const fb.StringReader(asciiOptimization: true)
+              .vTableGet(buffer, rootOffset, 6, '');
+          final object = HashtagEntity(id: idParam, name: nameParam);
 
           return object;
         })
@@ -185,4 +245,20 @@ class RecordEntityModel_ {
   /// See [RecordEntityModel.type].
   static final type =
       obx.QueryIntegerProperty<RecordEntityModel>(_entities[0].properties[5]);
+
+  /// see [RecordEntityModel.hashtags]
+  static final hashtags =
+      obx.QueryRelationToMany<RecordEntityModel, HashtagEntity>(
+          _entities[0].relations[0]);
+}
+
+/// [HashtagEntity] entity fields to define ObjectBox queries.
+class HashtagEntity_ {
+  /// See [HashtagEntity.id].
+  static final id =
+      obx.QueryIntegerProperty<HashtagEntity>(_entities[1].properties[0]);
+
+  /// See [HashtagEntity.name].
+  static final name =
+      obx.QueryStringProperty<HashtagEntity>(_entities[1].properties[1]);
 }

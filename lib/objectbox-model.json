@@ -40,12 +40,37 @@
           "type": 6
         }
       ],
+      "relations": [
+        {
+          "id": "1:8400700663430999727",
+          "name": "hashtags",
+          "targetId": "2:6395373326551313019"
+        }
+      ]
+    },
+    {
+      "id": "2:6395373326551313019",
+      "lastPropertyId": "2:4394508335109483375",
+      "name": "HashtagEntity",
+      "properties": [
+        {
+          "id": "1:6254594628705776353",
+          "name": "id",
+          "type": 6,
+          "flags": 1
+        },
+        {
+          "id": "2:4394508335109483375",
+          "name": "name",
+          "type": 9
+        }
+      ],
       "relations": []
     }
   ],
-  "lastEntityId": "1:7079185567296412889",
+  "lastEntityId": "2:6395373326551313019",
   "lastIndexId": "0:0",
-  "lastRelationId": "0:0",
+  "lastRelationId": "1:8400700663430999727",
   "lastSequenceId": "0:0",
   "modelVersion": 5,
   "modelVersionParserMinimum": 5,

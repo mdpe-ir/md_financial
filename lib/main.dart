@@ -7,10 +7,6 @@ import 'package:persian_datetime_picker/persian_datetime_picker.dart';
 import 'package:persian_number_utility/persian_number_utility.dart';
 import 'models/entities/record_entity_model.dart';
 
-// TODO: 1- choose database
-// TODO: 2- Add New Pay
-// TODO: 3- Show it
-
 /// Provides access to the ObjectBox Store throughout the app.
 late ObjectBox objectbox;
 

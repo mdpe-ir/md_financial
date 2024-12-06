@@ -1,1 +1,1 @@
-enum RecordEnumType {expense , income}
+enum RecordEnumType {expense , income , unknown}

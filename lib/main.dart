@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:md_financial/enums/record_enum.dart';
@@ -65,10 +67,30 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   final box = objectbox.store.box<RecordEntityModel>();
 
+  double totalIncome = 0;  // Variable to hold total income
+  double totalExpense = 0; // Variable to hold total expense
+
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
+    _calculateTotalAmounts();
+  }
+
+  // Method to calculate total income and expense
+  void _calculateTotalAmounts() {
+    totalIncome = 0;
+    totalExpense = 0;
+
+    // Iterate over all records and calculate totals
+    for (var item in box.getAll()) {
+      if (RecordEnumType.values[item.type] == RecordEnumType.income) {
+        totalIncome += item.amount;
+      } else if (RecordEnumType.values[item.type] == RecordEnumType.expense) {
+        totalExpense += item.amount;
+      }
+    }
+
+    setState(() {});
   }
 
   @override
@@ -85,7 +107,10 @@ class _MyHomePageState extends State<MyHomePage> {
             MaterialPageRoute(
               builder: (context) => AddScreen(),
             ),
-          );
+          ).then((_) {
+            // Recalculate total amounts after adding a new record
+            _calculateTotalAmounts();
+          });
         },
         child: Icon(Icons.add),
       ),
@@ -95,55 +120,64 @@ class _MyHomePageState extends State<MyHomePage> {
             padding: const EdgeInsets.all(16.0),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: const [
-                Text('مجموع درآمد: 0', style: TextStyle(fontSize: 18)),
-                Text('مجموع هزینه: 0', style: TextStyle(fontSize: 18)),
+              children: [
+                Text(
+                  'مجموع درآمد: ${totalIncome.toStringAsFixed(0).seRagham()} تومان',
+
+                ),
+                Text(
+                  'مجموع هزینه: ${totalExpense.toStringAsFixed(0).seRagham()} تومان',
+                ),
               ],
             ),
           ),
-          const Expanded(
-            child: Center(
-              child: Text(
-                'هیچ تراکنشی ثبت نشده است.',
-                style: TextStyle(fontSize: 18),
+          if (box.getAll().isNotEmpty)
+            Center(
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: ListView.builder(
+                  shrinkWrap: true,
+                  itemCount: box.getAll().length,
+                  itemBuilder: (BuildContext context, int index) {
+                    var item = box.getAll()[index];
+                    return Card(
+                      child: ListTile(
+                        title: Text(item.title),
+                        leading: Icon(
+                          RecordEnumType.values[item.type] ==
+                              RecordEnumType.expense
+                              ? Icons.arrow_upward
+                              : Icons.arrow_downward,
+                          color: RecordEnumType.values[item.type] ==
+                              RecordEnumType.expense
+                              ? Colors.red
+                              : Colors.green,
+                        ),
+                        subtitle: Row(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(item.amount.toString().seRagham() + " تومان"),
+                          ],
+                        ),
+                        trailing: Text(item.date.toPersianDate()),
+                      ),
+                    );
+                  },
+                ),
               ),
             ),
-          ),
+          if (box.getAll().isEmpty)
+            const Expanded(
+              child: Center(
+                child: Text(
+                  'هیچ تراکنشی ثبت نشده است.',
+                  style: TextStyle(fontSize: 18),
+                ),
+              ),
+            ),
         ],
       ),
-      // body: Center(
-      //   child: Padding(
-      //     padding: const EdgeInsets.all(8.0),
-      //     child: ListView.builder(
-      //       itemCount: box.getAll().length,
-      //       itemBuilder: (BuildContext context, int index) {
-      //         var item = box.getAll()[index];
-      //         return Card(
-      //           child: ListTile(
-      //             title: Text(item.title),
-      //             leading: Icon(
-      //               RecordEnumType.values[item.type] == RecordEnumType.expense
-      //                   ? Icons.arrow_upward
-      //                   : Icons.arrow_downward,
-      //               color: RecordEnumType.values[item.type] ==
-      //                       RecordEnumType.expense
-      //                   ? Colors.red
-      //                   : Colors.green,
-      //             ),
-      //             subtitle: Row(
-      //               mainAxisAlignment: MainAxisAlignment.start,
-      //               crossAxisAlignment: CrossAxisAlignment.start,
-      //               children: [
-      //                 Text(item.amount.toString().seRagham() + " تومان"),
-      //               ],
-      //             ),
-      //             trailing: Text(item.date.toPersianDate()),
-      //           ),
-      //         );
-      //       },
-      //     ),
-      //   ),
-      // ),
     );
   }
 }

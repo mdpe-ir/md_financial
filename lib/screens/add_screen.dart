@@ -28,6 +28,7 @@ class _AddScreenState extends State<AddScreen> {
 
   TextEditingController selectedDateController = TextEditingController();
   TextEditingController typeController = TextEditingController();
+  TextEditingController hashtagController = TextEditingController();
 
   RecordEnumType recordEnumType = RecordEnumType.unknown;
   Jalali picked = Jalali.now();
@@ -42,15 +43,19 @@ class _AddScreenState extends State<AddScreen> {
 
     // TODO: Show a dialog that use choice
 
-    var result = await Navigator.push(
+    selectedHashtags = await Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => ManageHashtagsScreen(isSelectorMode: true),
+        builder: (context) => ManageHashtagsScreen(
+          isSelectorMode: true,
+          preselectedHashtags: selectedHashtags,
+        ),
       ),
     );
 
+    hashtagController.text = selectedHashtags.map((e) => e.name).join(', ');
 
-    log("RESULT IS ${result[0].id}");
+    setState(() {});
 
     //
     // final List<HashtagEntity>? result =
@@ -200,8 +205,9 @@ class _AddScreenState extends State<AddScreen> {
             FormFieldWidget(
               label: "هشتگ‌ها",
               isReadOnly: true,
+              controller: hashtagController,
               onTap: showHashtagPicker,
-              value: selectedHashtags.map((e) => e.name).join(', '),
+              // value:
             ),
             FormFieldWidget(
               label: "مقدار",

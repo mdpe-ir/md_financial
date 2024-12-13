@@ -1,7 +1,3 @@
-import 'dart:developer';
-
-import 'package:filter_list/filter_list.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:md_financial/enums/record_enum.dart';
 import 'package:md_financial/main.dart';
@@ -13,7 +9,6 @@ import 'package:md_financial/widgets/form_field_widget.dart';
 import 'package:objectbox/objectbox.dart';
 import 'package:persian_datetime_picker/persian_datetime_picker.dart';
 import 'package:persian_number_utility/persian_number_utility.dart';
-import 'package:toggle_switch/toggle_switch.dart';
 
 class AddScreen extends StatefulWidget {
   const AddScreen({super.key});
@@ -43,7 +38,7 @@ class _AddScreenState extends State<AddScreen> {
 
     // TODO: Show a dialog that use choice
 
-    selectedHashtags = await Navigator.push(
+    var result = await Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => ManageHashtagsScreen(
@@ -53,30 +48,12 @@ class _AddScreenState extends State<AddScreen> {
       ),
     );
 
-    hashtagController.text = selectedHashtags.map((e) => e.name).join(', ');
+    if (result != null) {
+      selectedHashtags = result;
+      hashtagController.text = selectedHashtags.map((e) => e.name).join(', ');
+    }
 
     setState(() {});
-
-    //
-    // final List<HashtagEntity>? result =
-    //     await FilterListDialog.display<HashtagEntity>(
-    //   context,
-    //   listData: allHashtags,
-    //   selectedListData: selectedHashtags,
-    //   choiceChipLabel: (item) => item?.name ?? '',
-    //   onItemSearch: (item, query) =>
-    //       item.name.toLowerCase().contains(query.toLowerCase()),
-    //   onApplyButtonClick: (selected) {
-    //     setState(() {
-    //       selectedHashtags = selected ?? [];
-    //     });
-    //   },
-    //   validateSelectedItem: (list, val) => list!.contains(val),
-    // );
-    //
-    // if (result != null) {
-    //   setState(() => selectedHashtags = result);
-    // }
   }
 
   Future<void> showTypeModalBottomSheet() async {

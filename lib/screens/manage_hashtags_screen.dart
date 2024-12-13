@@ -27,16 +27,18 @@ class _ManageHashtagsScreenState extends State<ManageHashtagsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.isSelectorMode ? "انتخاب هشتگ‌ها" : "مدیریت هشتگ‌ها"),
+        title:
+            Text(widget.isSelectorMode ? "انتخاب هشتگ‌ها" : "مدیریت هشتگ‌ها"),
         actions: widget.isSelectorMode
             ? [
-          IconButton(
-            icon: const Icon(Icons.check),
-            onPressed: () {
-              Navigator.pop(context, selectedHashtags); // Return selected hashtags
-            },
-          ),
-        ]
+                IconButton(
+                  icon: const Icon(Icons.check),
+                  onPressed: () {
+                    Navigator.pop(
+                        context, selectedHashtags); // Return selected hashtags
+                  },
+                ),
+              ]
             : null,
       ),
       body: HashtagListWidget(
@@ -59,7 +61,7 @@ class _ManageHashtagsScreenState extends State<ManageHashtagsScreen> {
                 content: TextField(
                   controller: controller,
                   decoration:
-                  const InputDecoration(hintText: "نام هشتگ را وارد کنید"),
+                      const InputDecoration(hintText: "نام هشتگ را وارد کنید"),
                 ),
                 actions: [
                   TextButton(
@@ -89,13 +91,13 @@ class _ManageHashtagsScreenState extends State<ManageHashtagsScreen> {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                     content:
-                    Text("هشتگ '${result.trim()}' با موفقیت اضافه شد.")),
+                        Text("هشتگ '${result.trim()}' با موفقیت اضافه شد.")),
               );
             } else {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                     content:
-                    Text("هشتگ '${result.trim()}' قبلا اضافه شده است.")),
+                        Text("هشتگ '${result.trim()}' قبلا اضافه شده است.")),
               );
             }
           }
@@ -142,6 +144,9 @@ class _HashtagListWidgetState extends State<HashtagListWidget> {
     setState(() {
       allHashtags = box.getAll();
     });
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _onHashtagsChanged();
+    });
   }
 
   void _onHashtagsChanged() {
@@ -178,147 +183,161 @@ class _HashtagListWidgetState extends State<HashtagListWidget> {
           ),
           trailing: widget.isSelectorMode
               ? Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              IconButton(
-                icon: const Icon(Icons.edit),
-                onPressed: () async {
-                  final controller = TextEditingController(text: hashtag.name);
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.edit),
+                      onPressed: () async {
+                        final controller =
+                            TextEditingController(text: hashtag.name);
 
-                  final result = await showDialog<String>(
-                    context: context,
-                    builder: (context) {
-                      return AlertDialog(
-                        title: const Text("ویرایش هشتگ"),
-                        content: TextField(
-                          controller: controller,
-                          decoration: const InputDecoration(hintText: "ویرایش نام هشتگ"),
-                        ),
-                        actions: [
-                          TextButton(
-                            onPressed: () => Navigator.pop(context, null),
-                            child: const Text("لغو"),
-                          ),
-                          ElevatedButton(
-                            onPressed: () => Navigator.pop(context, controller.text),
-                            child: const Text("ذخیره"),
-                          ),
-                        ],
-                      );
-                    },
-                  );
-
-                  if (result != null && result.isNotEmpty && result != hashtag.name) {
-                    final box = objectbox.store.box<HashtagEntity>();
-                    hashtag.name = result;
-                    box.put(hashtag);
-                    _loadHashtags();
-                  }
-                },
-              ),
-              IconButton(
-                icon: const Icon(Icons.delete, color: Colors.red),
-                onPressed: () {
-                  showDialog(
-                    context: context,
-                    builder: (context) => AlertDialog(
-                      title: const Text("حذف هشتگ"),
-                      content: Text(
-                          "آیا مطمئن هستید که می‌خواهید هشتگ '${hashtag.name}' را حذف کنید؟"),
-                      actions: [
-                        TextButton(
-                          onPressed: () => Navigator.pop(context),
-                          child: const Text("لغو"),
-                        ),
-                        TextButton(
-                          onPressed: () {
-                            final box = objectbox.store.box<HashtagEntity>();
-                            box.remove(hashtag.id);
-                            setState(() {
-                              allHashtags.removeWhere((h) => h.id == hashtag.id);
-                            });
-                            Navigator.pop(context);
+                        final result = await showDialog<String>(
+                          context: context,
+                          builder: (context) {
+                            return AlertDialog(
+                              title: const Text("ویرایش هشتگ"),
+                              content: TextField(
+                                controller: controller,
+                                decoration: const InputDecoration(
+                                    hintText: "ویرایش نام هشتگ"),
+                              ),
+                              actions: [
+                                TextButton(
+                                  onPressed: () => Navigator.pop(context, null),
+                                  child: const Text("لغو"),
+                                ),
+                                ElevatedButton(
+                                  onPressed: () =>
+                                      Navigator.pop(context, controller.text),
+                                  child: const Text("ذخیره"),
+                                ),
+                              ],
+                            );
                           },
-                          child: const Text("حذف"),
-                        ),
-                      ],
+                        );
+
+                        if (result != null &&
+                            result.isNotEmpty &&
+                            result != hashtag.name) {
+                          final box = objectbox.store.box<HashtagEntity>();
+                          hashtag.name = result;
+                          box.put(hashtag);
+                          _loadHashtags();
+                        }
+                      },
                     ),
-                  );
-                },
-              ),
-            ],
-          )
+                    IconButton(
+                      icon: const Icon(Icons.delete, color: Colors.red),
+                      onPressed: () {
+                        showDialog(
+                          context: context,
+                          builder: (context) => AlertDialog(
+                            title: const Text("حذف هشتگ"),
+                            content: Text(
+                                "آیا مطمئن هستید که می‌خواهید هشتگ '${hashtag.name}' را حذف کنید؟"),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.pop(context),
+                                child: const Text("لغو"),
+                              ),
+                              TextButton(
+                                onPressed: () {
+                                  final box =
+                                      objectbox.store.box<HashtagEntity>();
+                                  box.remove(hashtag.id);
+                                  setState(() {
+                                    allHashtags
+                                        .removeWhere((h) => h.id == hashtag.id);
+                                  });
+                                  Navigator.pop(context);
+                                },
+                                child: const Text("حذف"),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+                  ],
+                )
               : Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              IconButton(
-                icon: const Icon(Icons.edit),
-                onPressed: () async {
-                  final controller = TextEditingController(text: hashtag.name);
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.edit),
+                      onPressed: () async {
+                        final controller =
+                            TextEditingController(text: hashtag.name);
 
-                  final result = await showDialog<String>(
-                    context: context,
-                    builder: (context) {
-                      return AlertDialog(
-                        title: const Text("ویرایش هشتگ"),
-                        content: TextField(
-                          controller: controller,
-                          decoration: const InputDecoration(hintText: "ویرایش نام هشتگ"),
-                        ),
-                        actions: [
-                          TextButton(
-                            onPressed: () => Navigator.pop(context, null),
-                            child: const Text("لغو"),
-                          ),
-                          ElevatedButton(
-                            onPressed: () => Navigator.pop(context, controller.text),
-                            child: const Text("ذخیره"),
-                          ),
-                        ],
-                      );
-                    },
-                  );
-
-                  if (result != null && result.isNotEmpty && result != hashtag.name) {
-                    final box = objectbox.store.box<HashtagEntity>();
-                    hashtag.name = result;
-                    box.put(hashtag);
-                    _loadHashtags();
-                  }
-                },
-              ),
-              IconButton(
-                icon: const Icon(Icons.delete, color: Colors.red),
-                onPressed: () {
-                  showDialog(
-                    context: context,
-                    builder: (context) => AlertDialog(
-                      title: const Text("حذف هشتگ"),
-                      content: Text(
-                          "آیا مطمئن هستید که می‌خواهید هشتگ '${hashtag.name}' را حذف کنید؟"),
-                      actions: [
-                        TextButton(
-                          onPressed: () => Navigator.pop(context),
-                          child: const Text("لغو"),
-                        ),
-                        TextButton(
-                          onPressed: () {
-                            final box = objectbox.store.box<HashtagEntity>();
-                            box.remove(hashtag.id);
-                            setState(() {
-                              allHashtags.removeWhere((h) => h.id == hashtag.id);
-                            });
-                            Navigator.pop(context);
+                        final result = await showDialog<String>(
+                          context: context,
+                          builder: (context) {
+                            return AlertDialog(
+                              title: const Text("ویرایش هشتگ"),
+                              content: TextField(
+                                controller: controller,
+                                decoration: const InputDecoration(
+                                    hintText: "ویرایش نام هشتگ"),
+                              ),
+                              actions: [
+                                TextButton(
+                                  onPressed: () => Navigator.pop(context, null),
+                                  child: const Text("لغو"),
+                                ),
+                                ElevatedButton(
+                                  onPressed: () =>
+                                      Navigator.pop(context, controller.text),
+                                  child: const Text("ذخیره"),
+                                ),
+                              ],
+                            );
                           },
-                          child: const Text("حذف"),
-                        ),
-                      ],
+                        );
+
+                        if (result != null &&
+                            result.isNotEmpty &&
+                            result != hashtag.name) {
+                          final box = objectbox.store.box<HashtagEntity>();
+                          hashtag.name = result;
+                          box.put(hashtag);
+                          _loadHashtags();
+                        }
+                      },
                     ),
-                  );
-                },
-              ),
-            ],
-          ),
+                    IconButton(
+                      icon: const Icon(Icons.delete, color: Colors.red),
+                      onPressed: () {
+                        showDialog(
+                          context: context,
+                          builder: (context) => AlertDialog(
+                            title: const Text("حذف هشتگ"),
+                            content: Text(
+                                "آیا مطمئن هستید که می‌خواهید هشتگ '${hashtag.name}' را حذف کنید؟"),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.pop(context),
+                                child: const Text("لغو"),
+                              ),
+                              TextButton(
+                                onPressed: () {
+                                  final box =
+                                      objectbox.store.box<HashtagEntity>();
+                                  box.remove(hashtag.id);
+                                  setState(() {
+                                    allHashtags
+                                        .removeWhere((h) => h.id == hashtag.id);
+                                  });
+                                  Navigator.pop(context);
+                                },
+                                child: const Text("حذف"),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+                  ],
+                ),
         );
       },
     );

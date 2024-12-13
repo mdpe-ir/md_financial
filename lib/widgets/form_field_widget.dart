@@ -7,9 +7,9 @@ class ThousandsFormatter extends TextInputFormatter {
 
   @override
   TextEditingValue formatEditUpdate(
-    TextEditingValue oldValue,
-    TextEditingValue newValue,
-  ) {
+      TextEditingValue oldValue,
+      TextEditingValue newValue,
+      ) {
     final formattedValue = _formatter
         .format(double.tryParse(newValue.text.replaceAll(',', '')) ?? 0);
 
@@ -37,6 +37,7 @@ class FormFieldWidget extends StatelessWidget {
     this.value,
     this.controller,
     this.prefixIcon,
+    this.validator,
   });
 
   final TextEditingController? controller;
@@ -50,12 +51,14 @@ class FormFieldWidget extends StatelessWidget {
   final Widget? suffix;
   final Widget? prefixIcon;
   final List<TextInputFormatter>? inputFormatters;
+  final String? Function(String?)? validator;
 
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.all(8.0),
-      child: TextField(
+      child: TextFormField(
+        autovalidateMode: AutovalidateMode.onUserInteraction,
         controller: controller,
         onChanged: onChanged,
         readOnly: isReadOnly,
@@ -63,6 +66,7 @@ class FormFieldWidget extends StatelessWidget {
         maxLines: maxLines,
         onTap: onTap,
         inputFormatters: inputFormatters,
+        validator: validator, // Use the validator here
         decoration: InputDecoration(
           border: OutlineInputBorder(),
           labelText: label,

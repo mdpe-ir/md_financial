@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:md_financial/enums/record_enum.dart';
 import 'package:md_financial/main.dart';
@@ -24,6 +26,8 @@ class _AddScreenState extends State<AddScreen> {
   TextEditingController selectedDateController = TextEditingController();
   TextEditingController typeController = TextEditingController();
   TextEditingController hashtagController = TextEditingController();
+  TextEditingController titleController = TextEditingController();
+  TextEditingController amountController = TextEditingController();
 
   RecordEnumType recordEnumType = RecordEnumType.unknown;
   Jalali picked = Jalali.now();
@@ -32,11 +36,11 @@ class _AddScreenState extends State<AddScreen> {
   String amount = "";
   String selectedDate = "";
 
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+
   Future<void> showHashtagPicker() async {
     final box = objectbox.store.box<HashtagEntity>();
     allHashtags = box.getAll();
-
-    // TODO: Show a dialog that use choice
 
     var result = await Navigator.push(
       context,
@@ -96,6 +100,10 @@ class _AddScreenState extends State<AddScreen> {
   }
 
   Future<void> save() async {
+    if (!_formKey.currentState!.validate()) {
+      return; // Do not proceed if validation fails
+    }
+
     final recordBox = objectbox.store.box<RecordEntityModel>();
     final hashtagBox = objectbox.store.box<HashtagEntity>();
 
@@ -120,9 +128,15 @@ class _AddScreenState extends State<AddScreen> {
     Navigator.pop(context);
   }
 
+  void _resetValidationErrors(String value) {
+    // This function will be called when the value changes to clear the error
+    setState(() {
+      // You can add specific logic to handle resetting error states if needed
+    });
+  }
+
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     selectedDate = picked?.formatFullDate() ?? "";
     selectedDateController.text = selectedDate;
@@ -134,86 +148,100 @@ class _AddScreenState extends State<AddScreen> {
       appBar: AppBar(
         title: Text("افزودن تراکنش جدید"),
       ),
+      floatingActionButton: FloatingActionButton(onPressed: save , child: Text("ذخیره"),),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: ListView(
-          children: [
-            FormFieldWidget(
-              label: "عنوان",
-              onChanged: (p0) {
-                setState(() => title = p0);
-              },
-            ),
-            FormFieldWidget(
-              label: "توضیحات",
-              minLines: 2,
-              maxLines: 5,
-              onChanged: (p0) {
-                setState(() => description = p0);
-              },
-            ),
-            FormFieldWidget(
-              controller: selectedDateController,
-              label: "تاریخ",
-              isReadOnly: true,
-              onTap: () async {
-                picked = await showPersianDatePicker(
-                      context: context,
-                      initialDate: Jalali.now(),
-                      firstDate: Jalali(1385, 8),
-                      lastDate: Jalali(1450, 9),
-                      initialEntryMode: PersianDatePickerEntryMode.calendarOnly,
-                      initialDatePickerMode: PersianDatePickerMode.day,
-                    ) ??
-                    Jalali.now();
-                setState(() {
-                  selectedDate = picked.formatFullDate() ?? "";
-                  selectedDateController.text = selectedDate;
-                });
-              },
-            ),
-            FormFieldWidget(
-              prefixIcon: Convertor.typeToIcon(recordEnumType),
-              controller: typeController,
-              label: "نوع",
-              isReadOnly: true,
-              onTap: showTypeModalBottomSheet,
-            ),
-            FormFieldWidget(
-              label: "هشتگ‌ها",
-              isReadOnly: true,
-              controller: hashtagController,
-              onTap: showHashtagPicker,
-              // value:
-            ),
-            FormFieldWidget(
-              label: "مقدار",
-              suffix: Text("تومان"),
-              inputFormatters: [ThousandsFormatter()],
-              onChanged: (p0) {
-                setState(() => amount = p0);
-              },
-            ),
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Text(amount.toWord()),
-            ),
-            SizedBox(height: 30),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                FilledButton(
-                  onPressed: save,
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Text("ذخیره"),
-                  ),
-                ),
-              ],
-            )
-          ],
+        child: Form(
+          key: _formKey, // Set the form key here
+          child: ListView(
+            children: [
+              FormFieldWidget(
+                label: "عنوان",
+                controller: titleController,
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'عنوان را وارد کنید';
+                  }
+                  return null; // No error
+                },
+                onChanged: (p0) {
+                  setState(() => title = p0);
+                },
+              ),
+              FormFieldWidget(
+                label: "توضیحات",
+                minLines: 2,
+                maxLines: 5,
+                onChanged: (p0) {
+                  setState(() => description = p0);
+                },
+              ),
+              FormFieldWidget(
+                controller: selectedDateController,
+                label: "تاریخ",
+                isReadOnly: true,
+                onTap: () async {
+                  picked = await showPersianDatePicker(
+                    context: context,
+                    initialDate: Jalali.now(),
+                    firstDate: Jalali(1385, 8),
+                    lastDate: Jalali(1450, 9),
+                    initialEntryMode: PersianDatePickerEntryMode.calendarOnly,
+                    initialDatePickerMode: PersianDatePickerMode.day,
+                  ) ??
+                      Jalali.now();
+                  setState(() {
+                    selectedDate = picked.formatFullDate() ?? "";
+                    selectedDateController.text = selectedDate;
+                  });
+                },
+              ),
+              FormFieldWidget(
+                prefixIcon: Convertor.typeToIcon(recordEnumType),
+                controller: typeController,
+                label: "نوع",
+                isReadOnly: true,
+                onTap: showTypeModalBottomSheet,
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'نوع تراکنش را انتخاب کنید';
+                  }
+                  return null;
+                },
+              ),
+              FormFieldWidget(
+                label: "هشتگ‌ها",
+                isReadOnly: true,
+                controller: hashtagController,
+                onTap: showHashtagPicker,
+              ),
+              FormFieldWidget(
+                controller: amountController,
+                label: "مقدار",
+                suffix: Text("تومان"),
+                inputFormatters: [ThousandsFormatter()],
+                onChanged: (p0) {
+                  log("i am ch");
+                  setState(() => amount = p0);
+                },
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'مقدار را وارد کنید';
+                  }
+                  return null;
+                },
+              ),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Text(amount.toWord()),
+              ),
+              SizedBox(height: 30),
+
+            ],
+          ),
         ),
       ),
     );
   }
 }
+

@@ -45,7 +45,7 @@ class MyApp extends StatelessWidget {
         fontFamily: "Vazirmatn",
         brightness: Brightness.dark,
         colorScheme: ColorScheme.fromSeed(
-            seedColor: Colors.blue, brightness: Brightness.dark),
+            seedColor: Colors.teal, brightness: Brightness.dark),
         useMaterial3: true,
       ),
       home: const MyHomePage(title: 'حساب داری شخصی'),
@@ -89,39 +89,61 @@ class _MyHomePageState extends State<MyHomePage> {
         },
         child: Icon(Icons.add),
       ),
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: ListView.builder(
-            itemCount: box.getAll().length,
-            itemBuilder: (BuildContext context, int index) {
-              var item = box.getAll()[index];
-              return Card(
-                child: ListTile(
-                  title: Text(item.title),
-                  leading: Icon(
-                    RecordEnumType.values[item.type] == RecordEnumType.expense
-                        ? Icons.arrow_upward
-                        : Icons.arrow_downward,
-                    color: RecordEnumType.values[item.type] ==
-                            RecordEnumType.expense
-                        ? Colors.red
-                        : Colors.green,
-                  ),
-                  subtitle: Row(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(item.amount.toString().seRagham() + " تومان"),
-                    ],
-                  ),
-                  trailing: Text(item.date.toPersianDate()),
-                ),
-              );
-            },
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: const [
+                Text('مجموع درآمد: 0', style: TextStyle(fontSize: 18)),
+                Text('مجموع هزینه: 0', style: TextStyle(fontSize: 18)),
+              ],
+            ),
           ),
-        ),
+          const Expanded(
+            child: Center(
+              child: Text(
+                'هیچ تراکنشی ثبت نشده است.',
+                style: TextStyle(fontSize: 18),
+              ),
+            ),
+          ),
+        ],
       ),
+      // body: Center(
+      //   child: Padding(
+      //     padding: const EdgeInsets.all(8.0),
+      //     child: ListView.builder(
+      //       itemCount: box.getAll().length,
+      //       itemBuilder: (BuildContext context, int index) {
+      //         var item = box.getAll()[index];
+      //         return Card(
+      //           child: ListTile(
+      //             title: Text(item.title),
+      //             leading: Icon(
+      //               RecordEnumType.values[item.type] == RecordEnumType.expense
+      //                   ? Icons.arrow_upward
+      //                   : Icons.arrow_downward,
+      //               color: RecordEnumType.values[item.type] ==
+      //                       RecordEnumType.expense
+      //                   ? Colors.red
+      //                   : Colors.green,
+      //             ),
+      //             subtitle: Row(
+      //               mainAxisAlignment: MainAxisAlignment.start,
+      //               crossAxisAlignment: CrossAxisAlignment.start,
+      //               children: [
+      //                 Text(item.amount.toString().seRagham() + " تومان"),
+      //               ],
+      //             ),
+      //             trailing: Text(item.date.toPersianDate()),
+      //           ),
+      //         );
+      //       },
+      //     ),
+      //   ),
+      // ),
     );
   }
 }

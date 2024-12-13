@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:filter_list/filter_list.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -38,32 +40,38 @@ class _AddScreenState extends State<AddScreen> {
     final box = objectbox.store.box<HashtagEntity>();
     allHashtags = box.getAll();
 
-    await Navigator.push(
+    // TODO: Show a dialog that use choice
+
+    var result = await Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => ManageHashtagsScreen(),
+        builder: (context) => ManageHashtagsScreen(isSelectorMode: true),
       ),
     );
 
-    final List<HashtagEntity>? result =
-        await FilterListDialog.display<HashtagEntity>(
-      context,
-      listData: allHashtags,
-      selectedListData: selectedHashtags,
-      choiceChipLabel: (item) => item?.name ?? '',
-      onItemSearch: (item, query) =>
-          item.name.toLowerCase().contains(query.toLowerCase()),
-      onApplyButtonClick: (selected) {
-        setState(() {
-          selectedHashtags = selected ?? [];
-        });
-      },
-      validateSelectedItem: (list, val) => list!.contains(val),
-    );
 
-    if (result != null) {
-      setState(() => selectedHashtags = result);
-    }
+    log("RESULT IS ${result[0].id}");
+
+    //
+    // final List<HashtagEntity>? result =
+    //     await FilterListDialog.display<HashtagEntity>(
+    //   context,
+    //   listData: allHashtags,
+    //   selectedListData: selectedHashtags,
+    //   choiceChipLabel: (item) => item?.name ?? '',
+    //   onItemSearch: (item, query) =>
+    //       item.name.toLowerCase().contains(query.toLowerCase()),
+    //   onApplyButtonClick: (selected) {
+    //     setState(() {
+    //       selectedHashtags = selected ?? [];
+    //     });
+    //   },
+    //   validateSelectedItem: (list, val) => list!.contains(val),
+    // );
+    //
+    // if (result != null) {
+    //   setState(() => selectedHashtags = result);
+    // }
   }
 
   Future<void> showTypeModalBottomSheet() async {

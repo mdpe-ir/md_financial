@@ -2,15 +2,40 @@ import 'package:filter_list/filter_list.dart';
 import 'package:flutter/material.dart';
 import 'package:md_financial/main.dart';
 import 'package:md_financial/models/entities/hashtag_entity.dart';
-import 'package:md_financial/models/entities/record_entity_model.dart';
 import 'package:md_financial/objectbox.g.dart';
 
 class ManageHashtagsScreen extends StatelessWidget {
+  final bool isSelectorMode;
+  final List<HashtagEntity>? preselectedHashtags;
+
+  const ManageHashtagsScreen({
+    Key? key,
+    this.isSelectorMode = false,
+    this.preselectedHashtags,
+  }) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("مدیریت هشتگ‌ها")),
-      body: HashtagListWidget(), // Implement a list widget for hashtags
+      appBar: AppBar(
+        title: Text(isSelectorMode ? "انتخاب هشتگ‌ها" : "مدیریت هشتگ‌ها"),
+        actions: isSelectorMode
+            ? [
+                IconButton(
+                  icon: const Icon(Icons.check),
+                  onPressed: () {
+                    final selectedHashtags =
+                        HashtagListWidget.getSelectedHashtags();
+                    Navigator.pop(context, selectedHashtags);
+                  },
+                ),
+              ]
+            : null,
+      ),
+      body: HashtagListWidget(
+        isSelectorMode: isSelectorMode,
+        preselectedHashtags: preselectedHashtags,
+      ),
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
           final TextEditingController controller = TextEditingController();
@@ -18,206 +43,257 @@ class ManageHashtagsScreen extends StatelessWidget {
             context: context,
             builder: (context) {
               return AlertDialog(
-                title: Text("اضافه کردن هشتگ"),
-                content: TextField(controller: controller),
+                title: const Text("اضافه کردن هشتگ"),
+                content: TextField(
+                  controller: controller,
+                  decoration:
+                      const InputDecoration(hintText: "نام هشتگ را وارد کنید"),
+                ),
                 actions: [
                   TextButton(
                     onPressed: () => Navigator.pop(context, null),
-                    child: Text("لغو"),
+                    child: const Text("لغو"),
                   ),
                   TextButton(
                     onPressed: () => Navigator.pop(context, controller.text),
-                    child: Text("اضافه کردن"),
+                    child: const Text("اضافه کردن"),
                   ),
                 ],
               );
             },
           );
 
-          if (result != null && result.isNotEmpty) {
+          if (result != null && result.trim().isNotEmpty) {
             final box = objectbox.store.box<HashtagEntity>();
-            box.put(HashtagEntity(name: result));
+
+            // Check for duplicates
+            final existing = box
+                .query(HashtagEntity_.name.equals(result.trim()))
+                .build()
+                .findFirst();
+
+            if (existing == null) {
+              box.put(HashtagEntity(name: result.trim()));
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                    content:
+                        Text("هشتگ '${result.trim()}' با موفقیت اضافه شد.")),
+              );
+              HashtagListWidget.reloadHashtags();
+            } else {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                    content:
+                        Text("هشتگ '${result.trim()}' قبلا اضافه شده است.")),
+              );
+            }
           }
         },
-        child: Icon(Icons.add),
+        child: const Icon(Icons.add),
       ),
     );
   }
 }
 
 class HashtagListWidget extends StatefulWidget {
-  const HashtagListWidget({super.key});
+  final bool isSelectorMode;
+  final List<HashtagEntity>? preselectedHashtags;
+
+  const HashtagListWidget({
+    Key? key,
+    this.isSelectorMode = false,
+    this.preselectedHashtags,
+  }) : super(key: key);
+
+  static final _selectedHashtags = <HashtagEntity>[];
+
+  static List<HashtagEntity> getSelectedHashtags() => _selectedHashtags;
+
+  static Function? reloadHashtagsCallback;
+
+  static void reloadHashtags() {
+    if (reloadHashtagsCallback != null) reloadHashtagsCallback!();
+  }
+
 
   @override
   State<HashtagListWidget> createState() => _HashtagListWidgetState();
 }
 
 class _HashtagListWidgetState extends State<HashtagListWidget> {
-  List<HashtagEntity> record = [];
-  List<String> allHashtags = []; // Available hashtags
-  List<String> selectedHashtags =
-      []; // Selected hashtags for the current record
+  List<HashtagEntity> allHashtags = [];
 
   @override
   void initState() {
     super.initState();
-    // Load existing hashtags from the database and initialize them
     _loadHashtags();
+    HashtagListWidget.reloadHashtagsCallback = _loadHashtags;
+    if (widget.preselectedHashtags != null) {
+      HashtagListWidget._selectedHashtags.addAll(widget.preselectedHashtags!);
+    }
   }
 
   void _loadHashtags() {
     final box = objectbox.store.box<HashtagEntity>();
-    record = box.getAll();
-    final hashtagBox = objectbox.store.box<HashtagEntity>();
-    final allTags = hashtagBox.getAll().map((e) => e.name).toList();
-    final recordTags = record.map((e) => e.name).toList();
-
     setState(() {
-      allHashtags = allTags;
-      selectedHashtags = recordTags;
+      allHashtags = box.getAll();
     });
   }
 
-  Future<void> _openFilterDialog() async {
-    await FilterListDialog.display<String>(
-      context,
-      listData: allHashtags,
-      selectedListData: selectedHashtags,
-      onApplyButtonClick: (list) {
-        if (list != null) {
-          setState(() {
-            selectedHashtags = List<String>.from(list);
-          });
-          _updateRecordHashtags();
-        }
-      },
-      onItemSearch: (item, query) =>
-          item.toLowerCase().contains(query.toLowerCase()),
-      choiceChipLabel: (item) => item,
-      validateSelectedItem: (list, item) => list!.contains(item),
-      hideSearchField: true,
-    );
-  }
 
-  void _updateRecordHashtags() {
-    final hashtagBox = objectbox.store.box<HashtagEntity>();
-
-    // Find or create hashtags in the database
-    final updatedTags = selectedHashtags.map((tagName) {
-      final existingTag = hashtagBox
-          .query(HashtagEntity_.name.equals(tagName))
-          .build()
-          .findFirst();
-      return existingTag ?? HashtagEntity(name: tagName);
-    }).toList();
-
-    // Update the record's hashtags
-    record.clear();
-    record.addAll(updatedTags);
-    objectbox.store.box<HashtagEntity>().putMany(record);
-  }
-
-  void _addNewHashtag(String name) {
-    final hashtagBox = objectbox.store.box<HashtagEntity>();
-    final newTag = HashtagEntity(name: name);
-
-    hashtagBox.put(newTag);
+  void _deleteHashtag(int id) {
+    final box = objectbox.store.box<HashtagEntity>();
+    box.remove(id);
     setState(() {
-      allHashtags.add(name);
+      allHashtags.removeWhere((hashtag) => hashtag.id == id);
     });
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text("Hashtags", style: Theme.of(context).textTheme.bodyLarge),
-            IconButton(
-              icon: const Icon(Icons.add),
-              onPressed: () => showDialog(
-                context: context,
-                builder: (_) => _AddHashtagDialog(onAdd: _addNewHashtag),
-              ),
+
+  void _editHashtag(HashtagEntity hashtag) async {
+    final controller = TextEditingController(text: hashtag.name);
+
+    final result = await showDialog<String>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text("ویرایش هشتگ"),
+          content: TextField(
+            controller: controller,
+            decoration: const InputDecoration(hintText: "ویرایش نام هشتگ"),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, null),
+              child: const Text("لغو"),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.pop(context, controller.text),
+              child: const Text("ذخیره"),
             ),
           ],
-        ),
-        Wrap(
-          spacing: 8,
-          children: selectedHashtags
-              .map((tag) => Chip(
-                    label: Text(tag),
-                    onDeleted: () {
-                      setState(() {
-                        selectedHashtags.remove(tag);
-                        _updateRecordHashtags();
-                      });
-                    },
-                  ))
-              .toList(),
-        ),
-        ElevatedButton(
-          onPressed: _openFilterDialog,
-          child: const Text("Manage Hashtags"),
-        ),
-      ],
+        );
+      },
     );
+
+    if (result != null && result.isNotEmpty && result != hashtag.name) {
+      final box = objectbox.store.box<HashtagEntity>();
+      hashtag.name = result;
+      box.put(hashtag);
+      _loadHashtags();
+    }
   }
-}
-
-class _AddHashtagDialog extends StatefulWidget {
-  final Function(String) onAdd;
-
-  const _AddHashtagDialog({super.key, required this.onAdd});
-
-  @override
-  State<_AddHashtagDialog> createState() => _AddHashtagDialogState();
-}
-
-class _AddHashtagDialogState extends State<_AddHashtagDialog> {
-  final TextEditingController _controller = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
-    return AlertDialog(
-      title: const Text("Add New Hashtag"),
-      content: TextField(
-        controller: _controller,
-        decoration: const InputDecoration(hintText: "Enter hashtag"),
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(),
-          child: const Text("Cancel"),
-        ),
-        ElevatedButton(
-          onPressed: () {
-            widget.onAdd(_controller.text);
-            Navigator.of(context).pop();
+    if (allHashtags.isEmpty) {
+      return const Center(child: Text("هیچ هشتگی وجود ندارد."));
+    }
+
+    return ListView.builder(
+      itemCount: allHashtags.length,
+      itemBuilder: (context, index) {
+        final hashtag = allHashtags[index];
+        return ListTile(
+          title: Text(hashtag.name),
+          onTap: () {
+            if (widget.isSelectorMode) {
+              bool value =
+                  !HashtagListWidget._selectedHashtags.contains(hashtag);
+              setState(() {
+                if (value == true) {
+                  HashtagListWidget._selectedHashtags.add(hashtag);
+                } else {
+                  HashtagListWidget._selectedHashtags.remove(hashtag);
+                }
+              });
+            }
           },
-          child: const Text("Add"),
-        ),
-      ],
-    );
-  }
-}
-
-class FilterListCloseButton extends StatelessWidget {
-  final VoidCallback? onClose;
-
-  const FilterListCloseButton({super.key, this.onClose});
-
-  @override
-  Widget build(BuildContext context) {
-    return TextButton(
-      onPressed: onClose ?? () => Navigator.of(context).pop(),
-      child: const Text(
-        "Close",
-        style: TextStyle(color: Colors.red),
-      ),
+          leading: Checkbox(
+            value: HashtagListWidget._selectedHashtags.contains(hashtag),
+            onChanged: (value) {
+              setState(() {
+                if (value == true) {
+                  HashtagListWidget._selectedHashtags.add(hashtag);
+                } else {
+                  HashtagListWidget._selectedHashtags.remove(hashtag);
+                }
+              });
+            },
+          ),
+          trailing: widget.isSelectorMode
+              ? Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.edit),
+                      onPressed: () => _editHashtag(hashtag),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.delete, color: Colors.red),
+                      onPressed: () {
+                        showDialog(
+                          context: context,
+                          builder: (context) => AlertDialog(
+                            title: const Text("حذف هشتگ"),
+                            content: Text(
+                                "آیا مطمئن هستید که می‌خواهید هشتگ '${hashtag.name}' را حذف کنید؟"),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.pop(context),
+                                child: const Text("لغو"),
+                              ),
+                              TextButton(
+                                onPressed: () {
+                                  _deleteHashtag(hashtag.id);
+                                  Navigator.pop(context);
+                                },
+                                child: const Text("حذف"),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+                  ],
+                )
+              : Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.edit),
+                      onPressed: () => _editHashtag(hashtag),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.delete, color: Colors.red),
+                      onPressed: () {
+                        showDialog(
+                          context: context,
+                          builder: (context) => AlertDialog(
+                            title: const Text("حذف هشتگ"),
+                            content: Text(
+                                "آیا مطمئن هستید که می‌خواهید هشتگ '${hashtag.name}' را حذف کنید؟"),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.pop(context),
+                                child: const Text("لغو"),
+                              ),
+                              TextButton(
+                                onPressed: () {
+                                  _deleteHashtag(hashtag.id);
+                                  Navigator.pop(context);
+                                },
+                                child: const Text("حذف"),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+                  ],
+                ),
+        );
+      },
     );
   }
 }

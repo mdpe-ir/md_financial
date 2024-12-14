@@ -22,6 +22,7 @@ This is a **simple and user-friendly personal financial accounting app** built w
 
 ## Current Roadmap
 ### In Progress
+- Read Bank Messages 
 - Enhance the home screen UI:
     - Show total spent and earned money using charts (by month, date, and year).
 - Enable search functionality:

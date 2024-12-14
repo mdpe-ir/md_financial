@@ -132,39 +132,37 @@ class _MyHomePageState extends State<MyHomePage> {
             ),
           ),
           if (box.getAll().isNotEmpty)
-            Center(
-              child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: ListView.builder(
-                  shrinkWrap: true,
-                  itemCount: box.getAll().length,
-                  itemBuilder: (BuildContext context, int index) {
-                    var item = box.getAll()[index];
-                    return Card(
-                      child: ListTile(
-                        title: Text(item.title),
-                        leading: Icon(
-                          RecordEnumType.values[item.type] ==
-                              RecordEnumType.expense
-                              ? Icons.arrow_upward
-                              : Icons.arrow_downward,
-                          color: RecordEnumType.values[item.type] ==
-                              RecordEnumType.expense
-                              ? Colors.red
-                              : Colors.green,
-                        ),
-                        subtitle: Row(
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(item.amount.toString().seRagham() + " تومان"),
-                          ],
-                        ),
-                        trailing: Text(item.date.toPersianDate()),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: ListView.builder(
+                shrinkWrap: true,
+                itemCount: box.getAll().length,
+                itemBuilder: (BuildContext context, int index) {
+                  var item = box.getAll()[index];
+                  return Card(
+                    child: ListTile(
+                      title: Text(item.title),
+                      leading: Icon(
+                        RecordEnumType.values[item.type] ==
+                            RecordEnumType.expense
+                            ? Icons.arrow_upward
+                            : Icons.arrow_downward,
+                        color: RecordEnumType.values[item.type] ==
+                            RecordEnumType.expense
+                            ? Colors.red
+                            : Colors.green,
                       ),
-                    );
-                  },
-                ),
+                      subtitle: Row(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(item.amount.toString().seRagham() + " تومان"),
+                        ],
+                      ),
+                      trailing: Text(item.date.toPersianDate()),
+                    ),
+                  );
+                },
               ),
             ),
           if (box.getAll().isEmpty)

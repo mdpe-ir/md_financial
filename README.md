@@ -56,7 +56,7 @@ flutter run
 Contributions are welcome! Feel free to submit issues or pull requests to help improve the app.
 
 ## License
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+This project is licensed under the Attribution-NonCommercial 4.0 International License. See the [LICENSE](LICENSE) file for details.
 
 ## Screenshots
 
